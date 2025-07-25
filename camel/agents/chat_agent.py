@@ -240,11 +240,18 @@ class ChatAgent(BaseAgent):
             if openai_new_api:
                 if not isinstance(response, ChatCompletion):
                     raise RuntimeError("OpenAI returned unexpected struct")
-                output_messages = [
-                    ChatMessage(role_name=self.role_name, role_type=self.role_type,
-                                meta_dict=dict(), **dict(choice.message))
-                    for choice in response.choices
-                ]
+                output_messages = []
+                for choice in response.choices:
+                    # Filter out fields that ChatMessage doesn't support
+                    message_dict = dict(choice.message)
+                    # Remove unsupported fields like 'annotations'
+                    supported_fields = {'role', 'content', 'refusal', 'function_call', 'tool_calls'}
+                    filtered_message = {k: v for k, v in message_dict.items() if k in supported_fields}
+                    
+                    output_messages.append(
+                        ChatMessage(role_name=self.role_name, role_type=self.role_type,
+                                    meta_dict=dict(), **filtered_message)
+                    )
                 info = self.get_info(
                     response.id,
                     response.usage,

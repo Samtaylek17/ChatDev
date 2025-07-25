@@ -82,20 +82,24 @@ class OpenAIModel(ModelBackend):
                     api_key=OPENAI_API_KEY
                 )
 
-            num_max_token_map = {
+            # OpenAI completion token limits (fixed limits per model)
+            num_max_completion_token_map = {
                 "gpt-3.5-turbo": 4096,
-                "gpt-3.5-turbo-16k": 16384,
+                "gpt-3.5-turbo-16k": 4096,
                 "gpt-3.5-turbo-0613": 4096,
-                "gpt-3.5-turbo-16k-0613": 16384,
-                "gpt-4": 8192,
-                "gpt-4-0613": 8192,
-                "gpt-4-32k": 32768,
-                "gpt-4-turbo": 100000,
-                "gpt-4o": 4096, #100000
-                "gpt-4o-mini": 16384, #100000
+                "gpt-3.5-turbo-16k-0613": 4096,
+                "gpt-4": 4096,
+                "gpt-4-0613": 4096,
+                "gpt-4-32k": 4096,
+                "gpt-4-turbo": 4096,
+                "gpt-4o": 4096,
+                "gpt-4o-mini": 16384,
             }
-            num_max_token = num_max_token_map[self.model_type.value]
-            num_max_completion_tokens = num_max_token - num_prompt_tokens
+            # Get the maximum allowed completion tokens for this model
+            max_allowed_completion_tokens = num_max_completion_token_map[self.model_type.value]
+            
+            # Use a reasonable default that doesn't exceed the model's limit
+            num_max_completion_tokens = min(max_allowed_completion_tokens, 4000)
             self.model_config_dict['max_tokens'] = num_max_completion_tokens
 
             response = client.chat.completions.create(*args, **kwargs, model=self.model_type.value,
@@ -115,20 +119,24 @@ class OpenAIModel(ModelBackend):
                 raise RuntimeError("Unexpected return from OpenAI API")
             return response
         else:
-            num_max_token_map = {
+            # OpenAI completion token limits (fixed limits per model)
+            num_max_completion_token_map = {
                 "gpt-3.5-turbo": 4096,
-                "gpt-3.5-turbo-16k": 16384,
+                "gpt-3.5-turbo-16k": 4096,
                 "gpt-3.5-turbo-0613": 4096,
-                "gpt-3.5-turbo-16k-0613": 16384,
-                "gpt-4": 8192,
-                "gpt-4-0613": 8192,
-                "gpt-4-32k": 32768,
-                "gpt-4-turbo": 100000,
-                "gpt-4o": 4096, #100000
-                "gpt-4o-mini": 16384, #100000
+                "gpt-3.5-turbo-16k-0613": 4096,
+                "gpt-4": 4096,
+                "gpt-4-0613": 4096,
+                "gpt-4-32k": 4096,
+                "gpt-4-turbo": 4096,
+                "gpt-4o": 4096,
+                "gpt-4o-mini": 16384,
             }
-            num_max_token = num_max_token_map[self.model_type.value]
-            num_max_completion_tokens = num_max_token - num_prompt_tokens
+            # Get the maximum allowed completion tokens for this model
+            max_allowed_completion_tokens = num_max_completion_token_map[self.model_type.value]
+            
+            # Use a reasonable default that doesn't exceed the model's limit
+            num_max_completion_tokens = min(max_allowed_completion_tokens, 4000)
             self.model_config_dict['max_tokens'] = num_max_completion_tokens
 
             response = openai.ChatCompletion.create(*args, **kwargs, model=self.model_type.value,
